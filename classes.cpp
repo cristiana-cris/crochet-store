@@ -6,6 +6,7 @@ Yarn::Yarn(const Yarn& y){
 	this->thickness = y.thickness;
 	this->color = y.color;
 	this->material = y.material;
+	this->id = y.id;
 }
 
 istream& operator>>(istream& in,Yarn& y) {
@@ -28,6 +29,7 @@ void Yarn::read(istream& in){
 	in>>color;
 	cout<<"Material: ";
 	in>>material;
+	generateId();
 }
 
 void Yarn::write(ostream& out) const{
@@ -35,6 +37,7 @@ void Yarn::write(ostream& out) const{
 	out<<'\t'<<"Thickness: "<<thickness<<" mm"<<'\n';
 	out<<'\t'<<"Color: "<<color<<'\n';
 	out<<'\t'<<"Material: "<<material<<'\n';
+	out<<'\t'<<"id: "<<id<<'\n';
 }
 
 Yarn operator+(const Yarn& y1,const Yarn& y2){
@@ -65,13 +68,6 @@ Yarn& Yarn::operator=(const Yarn& y) {
 
 int Product::index = 0;
 
-Product::Product(string n, float p, vector<Yarn> y) :price(p), name(n){
-	index++;
-	this->id = index;
-	this->yarn_needed = y;
-	this->stock=0;
-}
-
 Product::Product(const Product& p){
 	this->price = p.price;
 	this->stock = p.stock;
@@ -84,7 +80,7 @@ Product::Product(const Product& p){
 void Product::read(istream& in) {
 	cout<<"Please write the details about your product:"<<endl;
 	cout<<"Name: ";
-	in>>name;
+	getline(in >> ws, name);
 	cout<<"Price (lei): ";
 	in>>price;
 	cout<<"Number of types of yarn needed: ";
@@ -151,12 +147,12 @@ void Inventory::showInventory(){
 	}
 	
 	cnt=0;
-	if(id_p.empty()){
+	if(id_product.empty()){
 		cout<<"0 products in stock!"<<'\n';
 	}
 	else{
 		cout<<"Products in stock: "<<'\n';
-		for(int i:id_p){
+		for(int i:id_product){
 			Product* p=container.getProduct(i);
 			if(p)
 				cout<<*p;
@@ -164,3 +160,20 @@ void Inventory::showInventory(){
 	}
 }
 
+string Inventory::checkYarn(vector<Yarn> &yarn_needed){
+	string s="";
+	for(Yarn y : yarn_needed){
+		string id=y.getId();
+		Yarn* y_found=findYarn(id);
+		if(!y_found){
+			s+="Yarn "+id+" not in inventory."+"\n";
+		}
+		else{
+			if(*y_found < y)
+				s+="Not enough yarn of type "+id+"\n";
+		}
+	}
+	if(s=="")
+		return "Product was made!";
+	return s;
+}

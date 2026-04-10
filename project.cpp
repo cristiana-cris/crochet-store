@@ -6,9 +6,9 @@
 using namespace std;
 
 void newYarn(Inventory &inv){
-	Yarn y;
-	cin>>y;
-	inv.addYarn(&y);
+	Yarn* y = new Yarn();
+	cin>>*y;
+	inv.addYarn(y);
 }
 
 void newProduct(ProductContainer &products){
@@ -27,9 +27,14 @@ void makeProduct(Inventory& inventory,ProductContainer& products){
 		cout<<"Invalid ID. Please check option 2."<<'\n';
 		return;
 	}
-	p->incermentStock();
-	inventory.addProduct(id);
-	cout<<"Product was succsefully made!"<<'\n';
+
+	vector<Yarn> yarn_needed=p->getYarn();
+	string enough_yarn = inventory.checkYarn(yarn_needed);
+	if(enough_yarn == "Product was made!"){
+		p->incermentStock();
+		inventory.addProduct(id);
+	}
+	cout<<enough_yarn<<'\n';
 }
 
 void uiMenu() {

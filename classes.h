@@ -14,14 +14,22 @@ class Yarn{
 	int thickness;
 	string color, material;
 	string id;
+	void generateId(){
+		string mdummy = (material.length() >= 3) ? material.substr(0,3) : material;
+		string cdummy = (color.length() >= 3) ? color.substr(0,3) : color;
+		this->id=cdummy+"-"+mdummy+"-"+to_string(thickness);
+	}
 
 public:
-	Yarn(float l=0, int t=0, string c="None", string m="None") :length(l), thickness(t), color(c), material(m){
-		string mdummy=material.substr(0,3), cdummy=color.substr(0,3);
-		id=c+'-'+m+'-'+to_string(thickness)+'-'+to_string(length);
+	Yarn(float length=0, int thickness=0, string color="000", string material="000"):
+	length(length), thickness(thickness), color(color), material(material){
+		generateId();
 	}
 	Yarn(const Yarn&);
 	~Yarn(){}
+
+	string getId(){return id;}
+	float getLength(){return length;}
 
 	friend istream& operator>>(istream&,Yarn&);
     friend ostream& operator<<(ostream&,const Yarn&);
@@ -33,8 +41,6 @@ public:
 	//supraincarcare cu functie non membra
 	friend Yarn operator+ (const Yarn& y1, const Yarn& y2);
 	Yarn& operator=(const Yarn& other);
-
-	string getId(){return id;}
 };
 
 class Product{
@@ -47,11 +53,17 @@ class Product{
 	static int index;
 
 public:
-	Product(string n="Name", float p=0, vector<Yarn> y={});
+	Product(string name="None", float price=0, vector<Yarn> yarn_needed={}):
+	price(price),name(name), yarn_needed(yarn_needed){
+		index++;
+		this->id = index;
+		this->stock=0;
+	}
 	Product(const Product&);
 	~Product(){}
 
 	int getId(){return id;}
+	vector<Yarn> getYarn(){return yarn_needed;}
 	void incermentStock(){stock++;}
 
 	friend istream& operator>>(istream&,Product&);
@@ -89,15 +101,14 @@ public:
 class Inventory{
 	//relatie de agregare
 	ProductContainer& container;
+	vector<int> id_product;
 	//vector of pointers
 	unordered_map<string, Yarn*> all_yarns;
-	vector<int> id_p;
 
 public:
-	Inventory(ProductContainer& container,vector<int> id_p={}, unordered_map<string,Yarn*> y={}): container(container), all_yarns(y){
-		this->id_p=id_p;
-	}
-	//copy constructors changed beause we are working with pointers
+	Inventory(ProductContainer& container,vector<int> id_product={}, unordered_map<string,Yarn*> yarns={}): 
+	container(container), all_yarns(yarns), id_product(id_product){}
+	//copy constructors changed because we are working with pointers
 	Inventory(const Inventory&) = delete;
 	Inventory& operator=(const Inventory&) = delete;
 	~Inventory(){
@@ -107,8 +118,17 @@ public:
 	};
 
 	void addYarn(Yarn* y){
+		//verificat daca am deja fix acelasi tip de yarn, daca da adaug la lungime
 		all_yarns[y->getId()]=y;
 	}
-	void addProduct(const int id){id_p.push_back(id);}
+	Yarn* findYarn(string id){
+		auto yarn=all_yarns.find(id);
+		if(yarn!=all_yarns.end()){
+			return yarn->second;
+		}
+		return NULL;
+	}
+	string checkYarn(vector<Yarn> &yarn_needed);
+	void addProduct(const int id){id_product.push_back(id);}
 	void showInventory();
 };
