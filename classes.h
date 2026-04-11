@@ -14,9 +14,10 @@ class Yarn{
 	int thickness;
 	string color, material;
 	string id;
+
 	void generateId(){
-		string mdummy = (material.length() >= 3) ? material.substr(0,3) : material;
-		string cdummy = (color.length() >= 3) ? color.substr(0,3) : color;
+		string mdummy = (material.length()>=3) ? material.substr(0,3) : material;
+		string cdummy = (color.length()>=3) ? color.substr(0,3) : color;
 		this->id=cdummy+"-"+mdummy+"-"+to_string(thickness);
 	}
 
@@ -37,10 +38,11 @@ public:
     void write(ostream&) const;
 
 	//supraincarcare cu functie membra
+	Yarn& operator=(const Yarn& other);
+	Yarn& operator-=(const Yarn& y);
 	bool operator<(const Yarn& y){return this->length<y.length;}
 	//supraincarcare cu functie non membra
 	friend Yarn operator+ (const Yarn& y1, const Yarn& y2);
-	Yarn& operator=(const Yarn& other);
 };
 
 class Product{
@@ -117,10 +119,6 @@ public:
 		}
 	};
 
-	void addYarn(Yarn* y){
-		//verificat daca am deja fix acelasi tip de yarn, daca da adaug la lungime
-		all_yarns[y->getId()]=y;
-	}
 	Yarn* findYarn(string id){
 		auto yarn=all_yarns.find(id);
 		if(yarn!=all_yarns.end()){
@@ -128,7 +126,8 @@ public:
 		}
 		return NULL;
 	}
-	string checkYarn(vector<Yarn> &yarn_needed);
+	void addYarn(Yarn* yarn);
+	string checkAvailableYarn(vector<Yarn> &yarn_needed);
 	void addProduct(const int id){id_product.push_back(id);}
 	void showInventory();
 };

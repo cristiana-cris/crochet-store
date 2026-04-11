@@ -33,28 +33,28 @@ void Yarn::read(istream& in){
 }
 
 void Yarn::write(ostream& out) const{
+	out<<'\t'<<"id: "<<id<<'\n';
 	out<<'\t'<<"Length: "<<length<<" m"<<'\n';
 	out<<'\t'<<"Thickness: "<<thickness<<" mm"<<'\n';
 	out<<'\t'<<"Color: "<<color<<'\n';
 	out<<'\t'<<"Material: "<<material<<'\n';
-	out<<'\t'<<"id: "<<id<<'\n';
 }
 
 Yarn operator+(const Yarn& y1,const Yarn& y2){
 	string new_color, new_material;
-	int new_thickness = y1.thickness>y2.thickness ? y1.thickness : y2.thickness;
-	if(y1.color == y2.color)
-		new_color=y1.color;
-	else	
-		new_color=y1.color+" and "+y2.color;
-	if(y1.material==y2.material)
-		new_material=y1.material;
-	else
-		new_material=y1.material+" and "+y2.material;
-	return Yarn(y1.length+y2.length, new_thickness, new_color, new_material);
+	// int new_thickness = y1.thickness>y2.thickness ? y1.thickness : y2.thickness;
+	// if(y1.color == y2.color)
+	// 	new_color=y1.color;
+	// else	
+	// 	new_color=y1.color+" and "+y2.color;
+	// if(y1.material==y2.material)
+	// 	new_material=y1.material;
+	// else
+	// 	new_material=y1.material+" and "+y2.material;
+	return Yarn(y1.length+y2.length, y1.thickness, y1.color, y1.material);
 }
 
-Yarn& Yarn::operator=(const Yarn& y) {
+Yarn& Yarn::operator=(const Yarn& y){
     if (this == &y) 
 		return *this;
     this->length = y.length;
@@ -64,6 +64,10 @@ Yarn& Yarn::operator=(const Yarn& y) {
     return *this;
 }
 
+Yarn& Yarn::operator-=(const Yarn& y){
+	this->length-=y.length;
+	return *this;
+}
 //Product
 
 int Product::index = 0;
@@ -132,6 +136,16 @@ void ProductContainer::showProducts(){
 
 //Inventory
 
+void Inventory::addYarn(Yarn* yarn){
+	Yarn *y=findYarn(yarn->getId());
+	if(!y)
+		all_yarns[yarn->getId()]=yarn;	
+	else{
+		cout<<"Yarn "<<y->getId()<<" already in inventory. Added length "<<yarn->getLength()<<".\n";
+		*y=*y+*yarn;
+	}
+}
+
 void Inventory::showInventory(){
 	int cnt=0;
 	if(all_yarns.empty()){
@@ -145,6 +159,7 @@ void Inventory::showInventory(){
 			}
 		}
 	}
+	cout<<'\n';
 	
 	cnt=0;
 	if(id_product.empty()){
@@ -160,7 +175,7 @@ void Inventory::showInventory(){
 	}
 }
 
-string Inventory::checkYarn(vector<Yarn> &yarn_needed){
+string Inventory::checkAvailableYarn(vector<Yarn> &yarn_needed){
 	string s="";
 	for(Yarn y : yarn_needed){
 		string id=y.getId();
@@ -171,6 +186,15 @@ string Inventory::checkYarn(vector<Yarn> &yarn_needed){
 		else{
 			if(*y_found < y)
 				s+="Not enough yarn of type "+id+"\n";
+			else{
+				*y_found-=y;
+				if(y_found->getLength() == 0){
+					cout<<"Yarn of type "<<id<<" no longer in inventory."<<'\n';
+					all_yarns.erase(id);
+					delete y_found;
+					y_found=NULL;
+				}
+			}
 		}
 	}
 	if(s=="")
