@@ -1,3 +1,4 @@
-classes.exe
-classes.exe
-main.o
+/.vscode
+/build
+
+program
