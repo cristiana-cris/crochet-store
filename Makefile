@@ -5,13 +5,14 @@ CXXFLAGS += -I./include
 
 # Directories
 SRC_DIR = src
+INC_DIR = include
 OBJ_DIR = build
 BIN_DIR = .
 
 # Target & Source Files
-TARGET = $(BIN_DIR)/program
-SOURCES = main.cpp $(SRC_DIR)/containers.cpp $(SRC_DIR)/products.cpp $(SRC_DIR)/yarn.cpp
-HEADERS = include/containers.h include/products.h include/yarn.h
+TARGET = $(BIN_DIR)/program.exe
+SOURCES = main.cpp $(SRC_DIR)/inventory.cpp $(SRC_DIR)/products.cpp $(SRC_DIR)/yarn.cpp
+HEADERS = $(INC_DIR)/exception.h $(INC_DIR)/yarn.h $(INC_DIR)/storagebox.h $(INC_DIR)/products.h $(INC_DIR)/inventory.h $(INC_DIR)/transaction.h
 OBJECTS = $(addprefix $(OBJ_DIR)/,$(notdir $(SOURCES:.cpp=.o)))
 
 

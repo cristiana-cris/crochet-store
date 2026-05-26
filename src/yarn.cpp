@@ -7,8 +7,8 @@ Yarn::Yarn(const Yarn& y){
 	this->color = y.color;
 	this->material = y.material;
 	this->id = y.id;
-	this->price=price;
-	this->price_m=price_m;
+	this->price = y.price;
+	this->price_m = y.price_m;
 }
 
 istream& operator>>(istream& in,Yarn& y) {
@@ -31,6 +31,8 @@ void Yarn::read(istream& in){
 	in>>color;
 	cout<<"Material: ";
 	in>>material;
+	price=0;
+	price_m=0;
 	generateId();
 }
 
@@ -64,6 +66,8 @@ Yarn& Yarn::operator=(const Yarn& y){
     this->thickness = y.thickness;
     this->color = y.color;
     this->material = y.material;
+	this->price = y.price;
+    this->price_m = y.price_m;
     return *this;
 }
 

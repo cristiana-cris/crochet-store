@@ -29,6 +29,7 @@ void Product::read(istream& in){
 		in>>y_dummy;
 		yarn_needed.push_back(y_dummy);
 	}
+	this->price=calculatePrice();
 }
 
 void Product::write(ostream& out) const{
@@ -62,19 +63,17 @@ void Plushie::read(istream& in){
 	in>>size;
 	cout<<"Stuffing price (lei): ";
 	in>>stuffing_price;
-	cout<<"Other mercenary items price (eyes, nosse,...): ";
-	in>>mercenary_price;
 
 	cout<<"Is it keychain? (Yes/No): ";
 	int res=1;
 	string dummy;
-	if(res){
+	while(res){
 		cin>>dummy;
 		if(dummy=="Yes" || dummy=="yes"){
 			keychain=true;
 			res=0;
-			cout<<"Chain price: ";
-			in>>chain_price;
+			// cout<<"Chain price: ";
+			// in>>chain_price;
 		}
 		else if(dummy=="No" || dummy=="no"){ 
 			keychain=false;
@@ -98,7 +97,7 @@ void Plushie::write(ostream& out) const{
 
 int Plushie::calculatePrice(){
 	//price for all the materials
-	float materials = stuffing_price+chain_price+mercenary_price;
+	float materials = stuffing_price;
 	float yarn_price;
 	// calculate price for procentage of yarn used
 	for(Yarn y : yarn_needed){
@@ -107,8 +106,8 @@ int Plushie::calculatePrice(){
 	}
 
 	//assign estimated price to plushie type
-	if(size<20){type=SMALL;}
-	else if(size<10 && keychain) {type=KEYCHAIN;}
+	if(size<10 && keychain) {type=KEYCHAIN;}
+	else if(size<20){type=SMALL;}
 	else if(size>20 && size<40) {type=MEDIUM;}
 	else if(size>40)	{type=LARGE;}
 

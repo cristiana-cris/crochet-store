@@ -22,14 +22,14 @@ protected:
 	vector<Yarn> yarn_needed;
 	int stock;
 
-	int id; //id for each product, stock to know if it's available
+	string id; //id for each product, stock to know if it's available
 	static int index;
 
 public:
 	Product(string name="None", float price=0, vector<Yarn> yarn_needed={}):
 		name(name), price(price), yarn_needed(yarn_needed){
 			index++;
-			this->id = index;
+			this->id = to_string(index);
 			this->stock=0;
 		}
 	Product(const Product&);
@@ -38,10 +38,12 @@ public:
 	virtual int calculatePrice()=0;
 
 	void incermentStock(){stock++;}
+	void decreaseStock(){stock--;}
 	
-	int getId() const{return id;}
+	string getId() const{return id;}
 	vector<Yarn> getYarn(){return yarn_needed;}
 	float getPrice() const{return price;}
+	int getStock() const{return stock;}
 
 	void setPrice(float new_price){price=new_price;}
 
@@ -54,18 +56,19 @@ public:
 
 
 class Plushie: public Product{
+private:
 	int size; //the size of the plushie in cm
 	float stuffing_price;
-	float mercenary_price; //price for other mercenary items, ex: eyes, nose
+	// float mercenary_price; //price for other mercenary items, ex: eyes, nose
 
 	bool keychain; //if it is a keychain
-	float chain_price;
+	// float chain_price;
 
 	PlsuhieSize type; //for adjusting the price
 
 public:
-	Plushie(string name="None", float price=0, float mercenary_price=0.0, vector<Yarn> yarn_needed={}, int size=0, float stuffing_price=0.0, bool keychain=false):
-		Product(name, price, yarn_needed), size(size), stuffing_price(stuffing_price), mercenary_price(mercenary_price), keychain(keychain){}
+	Plushie(string name="None", float price=0, vector<Yarn> yarn_needed={}, int size=0, float stuffing_price=0.0, bool keychain=false):
+		Product(name, price, yarn_needed), size(size), stuffing_price(stuffing_price), keychain(keychain){}
 	~Plushie(){}
 
 	void read(istream&);
@@ -88,7 +91,7 @@ protected:
 public:
 	Clothes(string name="None", float price=0, vector<Yarn> yarn_needed={}, string size="0", string fit="None", float hours=0):
 		Product(name, price, yarn_needed), size(size), fit(fit), hours(hours){};
-	~Clothes(){}
+	virtual ~Clothes(){}
 
 	virtual void read(istream&);
 	virtual void write(ostream&) const;
@@ -98,8 +101,10 @@ public:
 
 
 class Top: public Clothes{
+private:
 	string sleeves; //sleevless, long, short
 	bool button_up; 
+
 public:
 	Top(string name="None", float price=0, vector<Yarn> yarn_needed={}, string size="0", string fit="None", string sleeves="None", bool button_up=false):
 		Clothes(name, price, yarn_needed, size, fit), sleeves(sleeves), button_up(button_up){};
@@ -110,7 +115,9 @@ public:
 };
 
 class Pants: public Clothes{
+private:
 	string length; //shorts, jorts, long
+	
 public:
 	void read(istream&);
 	void write(ostream&) const;

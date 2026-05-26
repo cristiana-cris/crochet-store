@@ -1,8 +1,11 @@
 #pragma once
 #include <string>
+#include <cmath>
+#include <iostream>
 using namespace std;
 
 class Yarn{
+private:
 	float length;
 	int thickness;
 	float price;
@@ -21,19 +24,21 @@ public:
 	Yarn(float length=0, int thickness=0, string color="000", string material="000", float price=0.0):
 	length(length), thickness(thickness),price(price), color(color), material(material){
 		generateId();
-		if(length!=0){
-			setPrice(price);
-		}
-	
+		setPrice(price);
 	}
 	Yarn(const Yarn&);
 	virtual ~Yarn(){}
 
 	void setPrice(float newprice){
+		if (length<=0 || newprice==0) {
+			price_m = 0;
+			return;
+		}
+
 		price=newprice;
 		price_m=price/length;
-		//2 decimals
-		price_m=((int)(price_m * 100 + .5) / 100.0);
+		//2 zecimale
+		price_m=round(price_m * 100.0f)/100.0f;
 	}
 
 	string getId(){return id;}
