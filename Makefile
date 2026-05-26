@@ -1,7 +1,6 @@
 # Compiler & Flags
 CXX = g++
-CXXFLAGS = -Wall -Wextra -fdiagnostics-color=always -g -std=c++17
-CXXFLAGS += -I./include
+CXXFLAGS = -Wall -Wextra -fdiagnostics-color=always -g -std=c++17 -I./include
 
 # Directories
 SRC_DIR = src
@@ -11,23 +10,27 @@ BIN_DIR = .
 
 # Target & Source Files
 TARGET = $(BIN_DIR)/program.exe
-SOURCES = main.cpp $(SRC_DIR)/inventory.cpp $(SRC_DIR)/products.cpp $(SRC_DIR)/yarn.cpp
-HEADERS = $(INC_DIR)/exception.h $(INC_DIR)/yarn.h $(INC_DIR)/storagebox.h $(INC_DIR)/products.h $(INC_DIR)/inventory.h $(INC_DIR)/transaction.h
-OBJECTS = $(addprefix $(OBJ_DIR)/,$(notdir $(SOURCES:.cpp=.o)))
+ROOT_SOURCES = main.cpp
+SRC_SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
+ALL_SOURCES = $(ROOT_SOURCES) $(SRC_SOURCES)
+HEADERS = $(wildcard $(INC_DIR)/*.h)
 
-
+# Object files
+ROOT_OBJECTS = $(addprefix $(OBJ_DIR)/,$(ROOT_SOURCES:.cpp=.o))
+SRC_OBJECTS = $(addprefix $(OBJ_DIR)/,$(notdir $(SRC_SOURCES:.cpp=.o)))
+ALL_OBJECTS = $(ROOT_OBJECTS) $(SRC_OBJECTS)
 
 .PHONY: all run clean help
 
 all: $(TARGET)
 
-$(TARGET): $(OBJECTS) | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $(TARGET)
-
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS) | $(OBJ_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+$(TARGET): $(ALL_OBJECTS) | $(BIN_DIR) $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) $(ALL_OBJECTS) -o $(TARGET)
 
 $(OBJ_DIR)/main.o: main.cpp $(HEADERS) | $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS) | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(BIN_DIR):
@@ -35,9 +38,6 @@ $(BIN_DIR):
 
 $(OBJ_DIR):
 	@mkdir -p $(OBJ_DIR)
-
-
-
 
 run: $(TARGET)
 	@$(TARGET)
@@ -48,5 +48,7 @@ clean:
 help:
 	@echo "Available targets:"
 	@echo "  make      - Build the project"
+	@echo "  make run  - Build and run the project"
+	@echo "  make clean - Remove build artifacts"
 	@echo "  make run  - Build and run"
 	@echo "  make clean - Remove build artifacts"

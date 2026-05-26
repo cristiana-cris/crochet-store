@@ -1,5 +1,7 @@
 #include "../include/products.h"
 #include <iostream>
+#include <set>
+using namespace std;
 
 //Product
 
@@ -11,7 +13,7 @@ Product::Product(const Product& p){
 	this->name = p.name;
 	this->yarn_needed= p.yarn_needed;
 	index++;
-	this->id=index;
+	this->id=to_string(index);
 }
 
 void Product::read(istream& in){
@@ -29,7 +31,6 @@ void Product::read(istream& in){
 		in>>y_dummy;
 		yarn_needed.push_back(y_dummy);
 	}
-	this->price=calculatePrice();
 }
 
 void Product::write(ostream& out) const{
@@ -55,7 +56,28 @@ ostream& operator<<(ostream& out, const Product& p){
     return out;
 }
 
+Product& Product::operator=(const Product& p){
+	name=p.name;
+	price=p.price;
+	for(Yarn y:p.yarn_needed){
+		yarn_needed.push_back(y);
+	}
+	id=p.id;
+	return *this;
+}
+
 //Plushie
+
+Plushie& Plushie::operator=(const Plushie& p){
+	if(this != &p){
+		Product::operator=(p);
+		size=p.size;
+		stuffing_price=p.stuffing_price;
+		keychain=p.keychain;
+		type=p.type;
+	}
+	return *this;
+}
 
 void Plushie::read(istream& in){
 	Product::read(in);
@@ -83,16 +105,18 @@ void Plushie::read(istream& in){
 			cout<<"Wrong input. Try again."<<'\n';
 		}
 	}
+
+	this->price=calculatePrice();
 }
 
 void Plushie::write(ostream& out) const{
 	Product::write(out);
-	cout<<"Size(in cm): "<<size<<'\n';
-	cout<<"Stuffing: "<<stuffing_price<<'\n';
-	cout<<"Keychain: ";
+	out<<"Size(in cm): "<<size<<'\n';
+	out<<"Stuffing: "<<stuffing_price<<'\n';
+	out<<"Keychain: ";
 	if(keychain)
-		cout<<"Yes\n";
-	else cout<<"No\n";
+		out<<"Yes\n";
+	else out<<"No\n";
 }
 
 int Plushie::calculatePrice(){
@@ -107,9 +131,9 @@ int Plushie::calculatePrice(){
 
 	//assign estimated price to plushie type
 	if(size<10 && keychain) {type=KEYCHAIN;}
-	else if(size<20){type=SMALL;}
-	else if(size>20 && size<40) {type=MEDIUM;}
-	else if(size>40)	{type=LARGE;}
+	else if(size<=20){type=SMALL;}
+	else if(size<=40) {type=MEDIUM;}
+	else	{type=LARGE;}
 
     int calc_price;
 	if(materials*3>this->type) calc_price=materials*3;
@@ -127,8 +151,8 @@ void Clothes::read(istream& in){
 	unsigned int res=1;
 	while(res){
 		in>>size;
-		res = valid.find(size);
-		if(res!=string::npos){res=0;}
+		set<string> valid = {"XS", "S", "M", "L", "XL", "XXL"};
+		if (valid.count(size)) {res = 0;}
 		else{
 			res=1;
 			cout<<"Invalid input. Remember the letters must be uppercase. Please try again. "<<'\n';
@@ -140,12 +164,14 @@ void Clothes::read(istream& in){
 	in>>hours;
 	cout<<"Wanted wage per hour (lei): ";
 	in>>wage;
+
+	this->price=calculatePrice();
 }
 
 void Clothes::write(ostream& out) const{
 	Product::write(out);
-	cout<<"Size: "<<size<<'\n';
-	cout<<"Fit: "<<fit<<'\n';
+	out<<"Size: "<<size<<'\n';
+	out<<"Fit: "<<fit<<'\n';
 }
 
 int Clothes::calculatePrice(){
@@ -160,7 +186,22 @@ int Clothes::calculatePrice(){
 	return calc_price;
 }
 
+Clothes& Clothes::operator=(const Clothes& c){
+	if(this != &c){
+		Product::operator=(c);
+		size=c.size; fit=c.fit; hours=c.hours; wage=c.wage;
+	}
+	return *this;
+}
+
 //Top
+Top& Top::operator=(const Top& t){
+	if (this != &t) {
+		Clothes::operator=(t);
+		sleeves=t.sleeves; button_up=t.button_up;
+	}
+	return *this;
+}
 
 void Top::read(istream& in){
 	Clothes::read(in);
@@ -169,7 +210,7 @@ void Top::read(istream& in){
 	cout<<"Is it a button up?(Yes/No) ";
 	int res=1;
 	string dummy;
-	if(res){
+	while(res){
 		cin>>dummy;
 		if(dummy=="Yes" || dummy=="yes"){
 			button_up=true;
@@ -187,11 +228,18 @@ void Top::read(istream& in){
 
 void Top::write(ostream& out) const{
 	Clothes::write(out);
-	cout<<"Sleeves: "<<sleeves<<'\n';
-	cout<<"Button up: "<<button_up<<'\n';
+	out<<"Sleeves: "<<sleeves<<'\n';
+	out<<"Button up: "<<button_up<<'\n';
 }
 
 //Pants
+Pants& Pants::operator=(const Pants& pt){
+	if(this != &pt){
+		Clothes::operator=(pt);
+		length=pt.length;
+	}
+	return *this;
+}
 
 void Pants::read(istream& in){
 	Clothes::read(in);
@@ -201,5 +249,5 @@ void Pants::read(istream& in){
 
 void Pants::write(ostream& out) const{
 	Clothes::write(out);
-	cout<<"Length: "<<length<<'\n';
+	out<<"Length: "<<length<<'\n';
 }

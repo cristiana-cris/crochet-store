@@ -1,18 +1,16 @@
 #pragma once
+#include <string>
 #include "products.h"
 #include "storagebox.h"
 #include "yarn.h"
-using namespace std;
-class Transaction;  
 
 class Inventory{
 private:
 	float budget;
-	Transaction *transaction;
 	//relatie de compunere
-	StorageBox<Yarn> all_yarns;
-	//trebuie sa fie de agregare!!!!
-	StorageBox<Product> made_products;
+	OwningBox<Yarn> all_yarns;
+	//relatie de agregare!!!!
+	ReferenceBox<Product> made_products;
 
 	//make singleton
 	static Inventory* instance;
@@ -26,14 +24,23 @@ public:
 	}
 	Inventory(const Inventory&) = delete;
 	Inventory& operator=(const Inventory&) = delete;
-	~Inventory(){};
+	~Inventory(){
+		all_yarns.clearMemory();
+		made_products.clearMemory();
+	};
 
+	static void freeInstance(){
+		if (instance) {
+			delete instance;
+			instance=NULL;
+		}
+	}
 
 	void setBudget(float budget){this->budget=budget;}
 	float getBudget(){return this->budget;}
 
 	template <typename T>
-	T* getItem(string id){
+	T* getItem(std::string id){
 		if constexpr (std::is_same_v<T, Yarn>){
             return all_yarns.getItem(id);
         }
@@ -46,13 +53,12 @@ public:
 	void addYarn(Yarn* yarn);
 	void addProduct(Product* p);
 
-	static void printFinancialReport();
+	void printFinancialReport();
 
 	void sellProduct(Product* p);
-	void checkAvailableYarn(vector<Yarn> &yarn_needed);
+	void checkAvailableYarn(std::vector<Yarn> &yarn_needed);
 
 	void applyClothingDiscount(const float percentage);
 
 	void showInventory();
-	void showProducts();
 };

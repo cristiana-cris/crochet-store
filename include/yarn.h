@@ -2,7 +2,6 @@
 #include <string>
 #include <cmath>
 #include <iostream>
-using namespace std;
 
 class Yarn{
 private:
@@ -10,18 +9,17 @@ private:
 	int thickness;
 	float price;
 	float price_m; //price_m represents price per meter
-	string color;
-	string material;
-	string id;
+	std::string color;
+	std::string material;
+	std::string id;
 
 	void generateId(){
-		string mdummy = (material.length()>=3) ? material.substr(0,3) : material;
-		string cdummy = (color.length()>=3) ? color.substr(0,3) : color;
-		this->id=cdummy+"-"+mdummy+"-"+to_string(thickness);
+		std::string mdummy = (material.length()>=3) ? material.substr(0,3) : material;
+		this->id=color+"-"+mdummy+"-"+std::to_string(thickness);
 	}
 
 public:
-	Yarn(float length=0, int thickness=0, string color="000", string material="000", float price=0.0):
+	Yarn(float length=0, int thickness=0, std::string color="000", std::string material="000", float price=0.0):
 	length(length), thickness(thickness),price(price), color(color), material(material){
 		generateId();
 		setPrice(price);
@@ -41,18 +39,18 @@ public:
 		price_m=round(price_m * 100.0f)/100.0f;
 	}
 
-	string getId(){return id;}
-	float getLength(){return length;}
-	float getPricePerMeter(){return price_m;}
-	float getPrice(){return price;}
+	std::string getId() const{return id;}
+	float getLength() const{return length;}
+	float getPricePerMeter() const{return price_m;}
+	float getPrice() const{return price;}
 
 	void substractLength(float l){length-=l;}
 
 	//overloading ninput and output operators
-	friend istream& operator>>(istream&,Yarn&);
-    friend ostream& operator<<(ostream&,const Yarn&);
-	virtual void read(istream&);
-    virtual void write(ostream&) const;
+	friend std::istream& operator>>(std::istream&,Yarn&);
+    friend std::ostream& operator<<(std::ostream&,const Yarn&);
+	virtual void read(std::istream&);
+    virtual void write(std::ostream&) const;
 
 	//supraincarcare cu functie membra
 	Yarn& operator=(const Yarn& other);

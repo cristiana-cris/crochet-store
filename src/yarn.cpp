@@ -1,5 +1,6 @@
 #include "../include/yarn.h"
 #include <iostream>
+using namespace std;
 
 Yarn::Yarn(const Yarn& y){
 	this->length = y.length;

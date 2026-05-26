@@ -1,7 +1,7 @@
 #include <iostream>
 #include "../include/inventory.h"
 #include "../include/exception.h"
-#include "../include/transaction.h"
+using namespace std;
 
 // Initialize the static member for singleton
 Inventory* Inventory::instance = nullptr;
@@ -9,18 +9,17 @@ Inventory* Inventory::instance = nullptr;
 void Inventory::addYarn(Yarn* yarn){
 	string id=yarn->getId();
 	Yarn *y=all_yarns.getItem(id);
+	float price=yarn->getPrice();
 
 	//check budget
-	try{
-		transaction=new Purchase(yarn->getPrice(), yarn);
-		transaction->execute(this);
-	}
-	catch(exception& e){
-		cout<<e.what()<<'\n';
+	if(price>budget){
+		cout<<"You're too poor to afford this exquisite yarn ball."<<'\n';
+		delete yarn;
 		return;
 	}
-	transaction->printReciept();
+	budget-=price;
 
+	// verificam daca aveam deja acel tip de yarn
 	if(!y){
 		all_yarns.store(yarn);
 	}
@@ -32,6 +31,7 @@ void Inventory::addYarn(Yarn* yarn){
 }
 
 void Inventory::addProduct(Product* p){
+	// verificam yarn din inventory
 	vector<Yarn> yarn_needed=p->getYarn();
 	try{
 		checkAvailableYarn(yarn_needed);
@@ -41,6 +41,7 @@ void Inventory::addProduct(Product* p){
 		return;
 	}
 
+	// scadem lungimea pe care o folosim pt fiecare yarn
 	for(Yarn y : yarn_needed){
 		string id=y.getId();
 		Yarn* y_found=all_yarns.getItem(id);
@@ -72,9 +73,9 @@ void Inventory::sellProduct(Product* p){
 	if(p->getStock()==0){
 		made_products.retrieve(p);
 	}
-	transaction=new Sell(p->getPrice(), p);
-	transaction->execute(this);
-	transaction->printReciept();
+	
+	budget+=p->getPrice();
+	cout<<"Sold product with id: "<<p->getId()<<'\n';
 }
 
 void Inventory::checkAvailableYarn(vector<Yarn> &yarn_needed){
@@ -89,31 +90,6 @@ void Inventory::checkAvailableYarn(vector<Yarn> &yarn_needed){
 			throw InsufficientYarnException(id, y_found->getLength(), y.getLength());
 		}
 	}
-}
-
-void Inventory::printFinancialReport(){
-	Inventory* inv =Inventory::getInstance();
-    
-    float materials_value=0.0f;
-    for(auto it=inv->all_yarns.begin(); it!=inv->all_yarns.end(); ++it){
-        if (it->second){
-            materials_value+=it->second->getPrice();
-        }
-    }
-
-    float products_value=0.0f;
-    for (auto it=inv->made_products.begin(); it!=inv->made_products.end(); ++it){
-        if (it->second){
-            products_value+=it->second->getPrice();
-        }
-    }
-
-    // cout<<"\n=== FINANCIAL ASSETS VALUATION REPORT ===\n";
-    cout<<"Liquid Cash (Budget):    "<<inv->getBudget()<<" lei\n";
-    cout<<"Raw Material Stock Value: "<<materials_value<<" lei\n";
-    cout<<"Finished Inventory Value: "<<products_value<<" lei\n";
-    cout<<"TOTAL NET WORTH:         "<<(inv->getBudget() + materials_value + products_value)<<" lei\n";
-    // cout << "==========================================\n\n";
 }
 
 void Inventory::applyClothingDiscount(const float percentage){
@@ -142,6 +118,29 @@ void Inventory::applyClothingDiscount(const float percentage){
                  <<" ("<<originalPrice<<" lei -> "<<newPrice<<" lei)\n";
         }
     }
+}
+
+void Inventory::printFinancialReport(){
+    float materials_value=0.0f;
+    for(auto it=this->all_yarns.begin(); it!=this->all_yarns.end(); ++it){
+		Yarn* yarn=it->second;
+        if(yarn){
+            materials_value+=yarn->getPricePerMeter()*yarn->getLength();
+        }
+    }
+
+    float products_value=0.0f;
+    for (auto it=this->made_products.begin(); it!=this->made_products.end(); ++it){
+		Product* p=it->second;
+        if(p){
+            products_value+=p->getPrice()*p->getStock();
+        }
+    }
+
+    cout<<"Liquid Cash (Budget):    "<<this->getBudget()<<" lei\n";
+    cout<<"Raw Material Stock Value: "<<materials_value<<" lei\n";
+    cout<<"Finished Inventory Value: "<<products_value<<" lei\n";
+    cout<<"TOTAL NET WORTH:         "<<(this->getBudget() + materials_value + products_value)<<" lei\n";
 }
 
 void Inventory::showInventory(){
@@ -173,11 +172,12 @@ void Inventory::showInventory(){
 	}
 }
 
-void Inventory::showProducts(){
-	if(made_products.empty()){
-		cout<<"No product details to show.";
-		return;
-	}
-	for(auto p:made_products)
-		cout<<*p.second;
-}
+
+// void Inventory::showProducts(){
+// 	if(made_products.empty()){
+// 		cout<<"No product details to show.";
+// 		return;
+// 	}
+// 	for(auto p:made_products)
+// 		cout<<*p.second;
+// }

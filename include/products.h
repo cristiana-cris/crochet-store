@@ -1,9 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <unordered_map>
 #include "yarn.h"
-using namespace std;
 
 //enum for estimated plushie price
 enum PlsuhieSize{
@@ -16,20 +14,20 @@ enum PlsuhieSize{
 
 class Product{
 protected:
-	string name;
+	std::string name;
 	float price;
 	//relatie de compunere
-	vector<Yarn> yarn_needed;
+	std::vector<Yarn> yarn_needed;
 	int stock;
 
-	string id; //id for each product, stock to know if it's available
+	std::string id; //id for each product, stock to know if it's available
 	static int index;
 
 public:
-	Product(string name="None", float price=0, vector<Yarn> yarn_needed={}):
+	Product(std::string name="None", float price=0, std::vector<Yarn> yarn_needed={}):
 		name(name), price(price), yarn_needed(yarn_needed){
 			index++;
-			this->id = to_string(index);
+			this->id = std::to_string(index);
 			this->stock=0;
 		}
 	Product(const Product&);
@@ -40,18 +38,20 @@ public:
 	void incermentStock(){stock++;}
 	void decreaseStock(){stock--;}
 	
-	string getId() const{return id;}
-	vector<Yarn> getYarn(){return yarn_needed;}
+	std::string getId() const{return id;}
+	std::vector<Yarn> getYarn(){return yarn_needed;}
 	float getPrice() const{return price;}
 	int getStock() const{return stock;}
 
 	void setPrice(float new_price){price=new_price;}
 
 	//overloading input and output operators
-	friend istream& operator>>(istream&,Product&);
-    friend ostream& operator<<(ostream&,const Product&);
-	virtual void read(istream&);
-    virtual void write(ostream&) const;
+	friend std::istream& operator>>(std::istream&,Product&);
+    friend std::ostream& operator<<(std::ostream&,const Product&);
+	virtual void read(std::istream&);
+    virtual void write(std::ostream&) const;
+	
+	Product& operator=(const Product& p);
 };
 
 
@@ -67,12 +67,16 @@ private:
 	PlsuhieSize type; //for adjusting the price
 
 public:
-	Plushie(string name="None", float price=0, vector<Yarn> yarn_needed={}, int size=0, float stuffing_price=0.0, bool keychain=false):
+	Plushie(std::string name="None", float price=0, std::vector<Yarn> yarn_needed={}, int size=0, float stuffing_price=0.0, bool keychain=false):
 		Product(name, price, yarn_needed), size(size), stuffing_price(stuffing_price), keychain(keychain){}
 	~Plushie(){}
 
-	void read(istream&);
-	void write(ostream&) const;
+	Plushie(const Plushie& p): 
+		Product(p), size(p.size), stuffing_price(p.stuffing_price), keychain(p.keychain), type(p.type){};
+	Plushie& operator=(const Plushie& p);
+
+	void read(std::istream&);
+	void write(std::ostream&) const;
 
 	int calculatePrice();
 };
@@ -80,21 +84,24 @@ public:
 
 class Clothes: public Product{
 protected:
-	string size; 
+	std::string size; 
 	//type of fit: loose, fancy
-	string fit;
+	std::string fit;
 	//how long it took to make the product 
 	float hours; 
 	//price for hour worked
 	float wage; 
 
 public:
-	Clothes(string name="None", float price=0, vector<Yarn> yarn_needed={}, string size="0", string fit="None", float hours=0):
+	Clothes(std::string name="None", float price=0, std::vector<Yarn> yarn_needed={}, std::string size="0", std::string fit="None", float hours=0):
 		Product(name, price, yarn_needed), size(size), fit(fit), hours(hours){};
 	virtual ~Clothes(){}
 
-	virtual void read(istream&);
-	virtual void write(ostream&) const;
+	Clothes(const Clothes& c): Product(c), size(c.size), fit(c.fit), hours(c.hours), wage(c.wage){}
+    Clothes& operator=(const Clothes& c);
+
+	virtual void read(std::istream&);
+	virtual void write(std::ostream&) const;
 
 	int calculatePrice();
 };
@@ -102,23 +109,33 @@ public:
 
 class Top: public Clothes{
 private:
-	string sleeves; //sleevless, long, short
+	std::string sleeves; //sleevless, long, short
 	bool button_up; 
 
 public:
-	Top(string name="None", float price=0, vector<Yarn> yarn_needed={}, string size="0", string fit="None", string sleeves="None", bool button_up=false):
-		Clothes(name, price, yarn_needed, size, fit), sleeves(sleeves), button_up(button_up){};
+	Top(std::string name="None", float price=0, std::vector<Yarn> yarn_needed={}, std::string size="0", std::string fit="None", float hours=0, std::string sleeves="None", bool button_up=false):
+		Clothes(name, price, yarn_needed, size, fit, hours), sleeves(sleeves), button_up(button_up){};
 	~Top(){};
 
-	void read(istream&);
-	void write(ostream&) const;
+	Top(const Top& t):Clothes(t), sleeves(t.sleeves), button_up(t.button_up){};
+	Top& operator=(const Top& t);
+
+	void read(std::istream&);
+	void write(std::ostream&) const;
 };
 
 class Pants: public Clothes{
 private:
-	string length; //shorts, jorts, long
+	std::string length; //shorts, jorts, long
 	
 public:
-	void read(istream&);
-	void write(ostream&) const;
+	Pants(std::string name="None", float price=0, std::vector<Yarn> yarn_needed={}, std::string size="0", std::string fit="None", float hours=0, std::string length="None"):
+		Clothes(name, price, yarn_needed, size, fit, hours), length(length){};
+	~Pants(){};
+
+	Pants(const Pants& pt):Clothes(pt), length(pt.length){};
+	Pants& operator=(const Pants& pt);
+
+	void read(std::istream&);
+	void write(std::ostream&) const;
 };
